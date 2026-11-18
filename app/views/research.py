@@ -38,7 +38,11 @@ header("Research & Reporting", "A published study you can check, and a lab for t
 data = load_data()
 t_study, t_lab, t_repro = st.tabs(["Published study", "Validation lab", "Reproducibility"])
 
-record_path = next(iter(sorted((ROOT / "experiments" / "results").glob("trend_vs_buyhold_*.json"))), None)
+results_dir = ROOT / "experiments" / "results"
+record_path = next(iter(sorted(results_dir.glob("trend_vs_buyhold_*.json"))), None)
+# Public copies ship no real-data record; fall back to the synthetic pipeline-check run.
+if record_path is None:
+    record_path = next(iter(sorted(results_dir.glob("SYNTHETIC_trend_vs_buyhold_*.json"))), None)
 manifest_path = ROOT / "experiments" / "MANIFEST.json"
 
 with t_study:
@@ -49,21 +53,33 @@ with t_study:
     else:
         rec = json.loads(record_path.read_text())
         cfg, res = rec["config"], rec["results"]
+        synthetic = bool(rec["data"].get("synthetic"))
         spy = res["assets"][cfg["primary_asset"]]
-        st.markdown(f"#### {cfg['question']}")
-        st.warning(
-            "**Read as a historical finding.** The evaluation period (2013 onward) was held back "
-            "while the rule was fixed, but it has since been examined twice (the original run and "
-            "an audit). It is no longer untouched data, and nothing here is a forecast. The study "
-            "always uses its own frozen dataset, not the dataset selected in the sidebar."
-        )
+        asset_label = f"{cfg['primary_asset']} (simulated series)" if synthetic else cfg["primary_asset"]
+        st.markdown(f"#### {cfg['question']}" + (" (synthetic-data run)" if synthetic else ""))
+        if synthetic:
+            st.warning(
+                "**SYNTHETIC-DATA STUDY: pipeline check only.** This record was produced by "
+                "`python experiments/trend_vs_buyhold.py --synthetic` on simulated random-walk prices "
+                f"that merely carry the names {', '.join(rec['data']['tickers'])}. They are not market "
+                "data, so these numbers say nothing about the real instruments or about whether the rule "
+                "works. Results computed on the private reference data are not published "
+                "(redistribution rights not established)."
+            )
+        else:
+            st.warning(
+                "**Read as a historical finding.** The evaluation period (2013 onward) was held back "
+                "while the rule was fixed, but it has since been examined twice (the original run and "
+                "an audit). It is no longer untouched data, and nothing here is a forecast. The study "
+                "always uses its own frozen dataset, not the dataset selected in the sidebar."
+            )
         oos = {(r.get("name") or r.get("index")): r for r in spy["out_of_sample"]}
         show_keys = ["cagr", "volatility", "sharpe", "max_drawdown", "es_95", "downside_deviation", "trade_count"]
         table = stats_table({"Trend 50/200": {k: oos["trend_50_200"][k] for k in show_keys},
                              "Buy and hold": {k: oos["buy_and_hold"][k] for k in show_keys}})  # fmt: skip
         left, right = st.columns([3, 2])
         with left:
-            st.markdown(f"**{cfg['primary_asset']}, evaluation period {spy['split']['test'][0]} to {spy['split']['test'][1]}**")
+            st.markdown(f"**{asset_label}, evaluation period {spy['split']['test'][0]} to {spy['split']['test'][1]}**")
             st.dataframe(table, width="stretch")
             ci = pd.DataFrame(spy["improvement_intervals"])
             ci = ci.rename(columns={ci.columns[0]: "metric"}).set_index("metric")
@@ -98,9 +114,12 @@ with t_study:
                 f"- Annual return (CAGR): {t['cagr']:.2%} vs {b['cagr']:.2%}, a difference of "
                 f"{(t['cagr'] - b['cagr']) * 100:+.1f} points.\n"
                 f"- The rule traded {t['trade_count'] / years:.1f} times a year on average.\n\n"
-                "**Conclusion:** the evidence does not support the claim that this rule improved "
-                f"downside risk over {spy['split']['test'][0][:4]} to {spy['split']['test'][1][:4]}."
-            )
+                + ("**Conclusion:** none is drawn. The prices are simulated, so this run only shows "
+                   "that the study pipeline works end to end; it is not evidence for or against the "
+                   "rule on any real market." if synthetic else
+                   "**Conclusion:** the evidence does not support the claim that this rule improved "
+                   f"downside risk over {spy['split']['test'][0][:4]} to {spy['split']['test'][1][:4]}.")
+            )  # fmt: skip
         with st.expander("Protocol: what was fixed in advance"):
             ex = cfg["execution"]
             st.table(pd.DataFrame({"Setting": {
@@ -130,7 +149,7 @@ with t_study:
                 "- **Simplifications:** cash earns nothing, flat cost model, long-only.\n"
                 "- **Bootstrap:** resamples realized returns and assumes the period is representative."
             )
-        report = ROOT / "reports" / "trend_vs_buyhold.md"
+        report = ROOT / "reports" / f"{'SYNTHETIC_' if synthetic else ''}trend_vs_buyhold.md"
         with st.expander("Full result tables (development period, other assets, robustness)"):
             st.markdown(report.read_text() if report.exists() else "Report file not found.")
         files = {"Experiment record (JSON)": (record_path.read_bytes(), record_path.name)}

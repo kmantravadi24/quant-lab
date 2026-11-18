@@ -68,30 +68,44 @@ for row in (steps[:4], steps[4:8]):
                 st.page_link(path, label=f"Open {title}", icon=":material/arrow_forward:")
 
 st.subheader("Latest recorded experiment")
-records = sorted(
+def _trend_records(pattern: str) -> list:
     # Only the trend study's records: other result files (e.g. forecast validation) differ in form.
-    (p for p in (ROOT / "experiments" / "results").glob("trend_vs_buyhold_*.json") if "SYNTHETIC" not in p.name),
-    key=lambda p: json.loads(p.read_text())["run_at"],
-)
+    return sorted((ROOT / "experiments" / "results").glob(pattern),
+                  key=lambda p: json.loads(p.read_text())["run_at"])  # fmt: skip
+
+
+# A real-data record wins; public copies ship only the synthetic pipeline-check run.
+records = [p for p in _trend_records("trend_vs_buyhold_*.json") if "SYNTHETIC" not in p.name] \
+    or _trend_records("SYNTHETIC_trend_vs_buyhold_*.json")
 if not records:
     st.info("No experiment is recorded in this copy. Run `python experiments/trend_vs_buyhold.py` "
             "on data you are licensed to use.")
 else:
     rec = json.loads(records[-1].read_text())
+    synthetic = bool(rec["data"].get("synthetic"))
     spy = rec["results"]["assets"][rec["config"]["primary_asset"]]
     oos = {(r.get("name") or r.get("index")): r for r in spy["out_of_sample"]}
     trend, bench = oos["trend_50_200"], oos["buy_and_hold"]
-    st.markdown(f"**{rec['config']['question']}**")
+    st.markdown(f"**{rec['config']['question']}**" + (" (synthetic-data run)" if synthetic else ""))
     c = st.columns(4)
     c[0].metric("Trend CAGR", f"{trend['cagr']:.2%}", f"{trend['cagr'] - bench['cagr']:+.2%} vs buy and hold", delta_color="off", delta_arrow="off")
     c[1].metric("Buy-and-hold CAGR", f"{bench['cagr']:.2%}")
     c[2].metric("Max drawdown, trend", f"{trend['max_drawdown']:.2%}")
     c[3].metric("Max drawdown, buy and hold", f"{bench['max_drawdown']:.2%}")
     test = spy["split"]["test"]
-    st.caption(
-        f"{rec['config']['primary_asset']}, evaluation period {test[0]} to {test[1]}, run "
-        f"{rec['run_at'][:10]} on a frozen dataset (fingerprint `{rec['results']['data_fingerprint_close']}`, "
-        f"code `{(rec['environment']['git_commit'] or '')[:7]}`). A historical result on a period "
-        "that has since been re-examined: it is not a fresh out-of-sample confirmation, and not a "
-        "forecast. Details on the Research & Reporting page."
-    )
+    if synthetic:
+        st.caption(
+            f"**SYNTHETIC-DATA STUDY.** Simulated random-walk series named {rec['config']['primary_asset']}, "
+            f"evaluation period {test[0]} to {test[1]}, run {rec['run_at'][:10]} (fingerprint "
+            f"`{rec['results']['data_fingerprint_close']}`, code `{(rec['environment']['git_commit'] or '')[:7]}`). "
+            "Pipeline check only: not market data, so it says nothing about the real instrument or "
+            "the rule. Details on the Research & Reporting page."
+        )  # fmt: skip
+    else:
+        st.caption(
+            f"{rec['config']['primary_asset']}, evaluation period {test[0]} to {test[1]}, run "
+            f"{rec['run_at'][:10]} on a frozen dataset (fingerprint `{rec['results']['data_fingerprint_close']}`, "
+            f"code `{(rec['environment']['git_commit'] or '')[:7]}`). A historical result on a period "
+            "that has since been re-examined: it is not a fresh out-of-sample confirmation, and not a "
+            "forecast. Details on the Research & Reporting page."
+        )
