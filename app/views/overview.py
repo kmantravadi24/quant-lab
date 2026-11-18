@@ -9,17 +9,17 @@ from quantlab.data.transforms import normalize, simple_returns
 header("Quant Lab", "Systematic Research. Measurable Risk. Reproducible Results.")
 data = load_data()
 
-st.markdown(
-    "A research environment for testing systematic investment ideas **honestly**: signals are "
-    "computed from past data only, trades fill the next day and pay costs, and every result "
-    "comes with its uncertainty and its limitations."
-)
-
 k = st.columns(4)
 k[0].metric("Instruments", len(data.tickers))
 k[1].metric("Sessions", f"{len(data.dates):,}")
 k[2].metric("First session", data.metadata.start)
 k[3].metric("Last session", data.metadata.end)
+with st.expander("How Quant Lab tests ideas"):
+    st.markdown(
+        "A research environment for testing systematic investment ideas **honestly**: signals are "
+        "computed from past data only, trades fill the next day and pay costs, and every result "
+        "comes with its uncertainty and its limitations."
+    )
 
 st.subheader("Selected instruments")
 show(line_chart(normalize(data.close), "Growth of 100 invested at each instrument's first date",

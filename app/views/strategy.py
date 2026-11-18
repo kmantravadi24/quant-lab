@@ -18,13 +18,6 @@ data = load_data()
 strategy, kind = strategy_controls(data)
 out = strategy.generate(data)
 
-info = INFO[kind]
-c1, c2 = st.columns(2)
-c1.markdown(f"**What it measures**  \n{info['measures']}\n\n**How a signal is generated**  \n{info['signal']}")
-c2.markdown(f"**The idea being tested**  \n{info['idea']}\n\n**Known weaknesses**  \n{info['limits']}")
-st.caption("Change the parameters in the sidebar. A signal dated T uses prices up to the close "
-           "of T only, and would trade at the open of T+1.")  # fmt: skip
-
 held = out.signals.loc[:, out.signals.any()]
 k = st.columns(4)
 k[0].metric("Decisions", len(out.weights), help="Dates on which the target portfolio changes.")
@@ -33,6 +26,14 @@ first = out.weights.index[0].date() if len(out.weights) else "none"
 k[2].metric("First decision", str(first), help="Earlier sessions lack enough history for a signal.")
 k[3].metric("Assets ever held", f"{held.shape[1]} of {len(data.tickers)}")
 synthetic_trend_note(data, kind)
+
+info = INFO[kind]
+with st.expander("How this rule works, and its known weaknesses"):
+    c1, c2 = st.columns(2)
+    c1.markdown(f"**What it measures**  \n{info['measures']}\n\n**How a signal is generated**  \n{info['signal']}")
+    c2.markdown(f"**The idea being tested**  \n{info['idea']}\n\n**Known weaknesses**  \n{info['limits']}")
+    st.caption("Change the parameters in the sidebar. A signal dated T uses prices up to the close "
+               "of T only, and would trade at the open of T+1.")  # fmt: skip
 if out.weights.empty:
     st.warning("**No signal was ever generated.** There is not enough history for these windows, "
                "or the entry condition never occurred. Shorten the windows or load more history.")  # fmt: skip
