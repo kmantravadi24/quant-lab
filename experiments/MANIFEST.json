@@ -1,0 +1,72 @@
+{
+  "purpose": "Identifies the exact dataset behind the published study so results can be checked even if the data files are not distributed.",
+  "dataset": {
+    "path": "experiments/data/yfinance__IWM-QQQ-SPY__1993-01-01__2026-10-31",
+    "provider": "yfinance",
+    "retrieved_at": "2026-11-16T20:03:00+00:00",
+    "tickers": [
+      "SPY",
+      "QQQ",
+      "IWM"
+    ],
+    "coverage": [
+      "1993-01-29",
+      "2026-10-30"
+    ],
+    "sessions": 8497,
+    "adjustment": "Split- and dividend-adjusted OHLC (all four fields scaled by AdjClose/Close). A total-return-oriented research proxy, not executable historical quotes.",
+    "schema": {
+      "files": [
+        "open.csv",
+        "high.csv",
+        "low.csv",
+        "close.csv",
+        "volume.csv",
+        "metadata.json"
+      ],
+      "layout": "one CSV per field; rows = session dates (column 'date'); columns = tickers; empty cell = no observation"
+    },
+    "close_fingerprint": "76f294e718c47ee2",
+    "close_fingerprint_method": "first 16 hex chars of sha256(close.round(6).to_csv())",
+    "sha256": {
+      "close.csv": "e6d529deadfcd3238eccac8d91b060bdfe7f8ef58912b605b295fb8141581688",
+      "high.csv": "67270bd5dfda086b5d96be16e8201b53ed38c3708b56554c4df830ff0a7fb689",
+      "low.csv": "8018bc9321e74f68833eec68afc06b433532c5f4af18f25ea2ceed896dc451c2",
+      "metadata.json": "d25efd39a5a75bad23e943723f33f043eb4affae8833f0950ee906de385b8640",
+      "open.csv": "c53236920f6490d27be337224279470c529aa12ea17812399707a7aaa6f66a50",
+      "volume.csv": "cbd4cf70232ae0d1e23a01b06ca142bdbaa4530fb71003d931d2648e75a96659"
+    }
+  },
+  "rights": {
+    "status": "NOT ESTABLISHED",
+    "note": "Derived from Yahoo Finance via the yfinance library. Yahoo's terms permit personal use and do not grant redistribution rights. Treat as private: do not publish these files without confirming rights."
+  },
+  "dependent_outputs": [
+    {
+      "path": "experiments/results/trend_vs_buyhold_103ff696a37b.json",
+      "depends": "every number"
+    },
+    {
+      "path": "reports/trend_vs_buyhold.md",
+      "depends": "every number"
+    },
+    {
+      "path": "RESEARCH.md",
+      "depends": "all quoted results"
+    },
+    {
+      "path": "README.md",
+      "depends": "headline result table"
+    },
+    {
+      "path": "docs/AUDIT.md",
+      "depends": "independent reproduction figures"
+    }
+  ],
+  "without_the_private_dataset": "`python experiments/trend_vs_buyhold.py` downloads the same tickers and dates from Yahoo. Adjusted prices drift over time (1.3e-6 relative was observed within hours; larger after each dividend), so figures agree to roughly four significant digits, not bit for bit. `--verify` reports the difference.",
+  "record": {
+    "config_hash": "103ff696a37b",
+    "code_commit": "f4469895800308ef30704e859ff57a27613f9312",
+    "run_at": "2026-11-16T20:30:25+00:00"
+  }
+}

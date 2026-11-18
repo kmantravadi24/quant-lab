@@ -1,0 +1,9 @@
+# Runtime dependencies for hosting the dashboard (e.g. Streamlit Community Cloud).
+# The app adds ./src to the import path itself, so the package need not be installed.
+# For development use:  pip install -e ".[data,app,dev]"
+numpy>=1.26
+pandas>=2.2
+plotly>=5.20
+streamlit>=1.50
+yfinance>=0.2.40
+exchange_calendars>=4.5

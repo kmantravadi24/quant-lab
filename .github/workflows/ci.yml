@@ -1,0 +1,118 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    # Weekly: newest dependency releases (test job) and new security advisories (audit job).
+    - cron: "17 6 * * 1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install
+        run: pip install -e ".[data,app,dev,agent]"
+      - name: Package builds and imports from a clean install
+        run: |
+          pip install build
+          python -m build --wheel --outdir /tmp/dist .
+          python -m venv /tmp/wheel-env
+          /tmp/wheel-env/bin/pip install /tmp/dist/*.whl
+          cd /tmp && /tmp/wheel-env/bin/python -c "import quantlab, quantlab.backtesting, quantlab.analytics, quantlab.risk; print(quantlab.__version__)"
+      - name: Lint
+        run: ruff check .
+      - name: Test (offline; no market-data provider is contacted)
+        run: python -m pytest -q
+      - name: Check that the published study still reproduces
+        # Uses the frozen dataset when present; skipped in a checkout that does not ship it.
+        run: |
+          if [ -d experiments/data ]; then python experiments/trend_vs_buyhold.py --verify; fi
+
+  browser:
+    # Real-browser workflow checks on synthetic data. Separate from the unit matrix so a
+    # browser or runner problem cannot hide a failing calculation, and the reverse.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install the dashboard
+        run: pip install -e ".[data,app]"
+      - name: Install the browser
+        run: |
+          npm install --no-save playwright@1.63.0
+          npx playwright install --with-deps chromium
+      - name: Browser workflows (offline, synthetic data)
+        run: |
+          mkdir -p browser-artifacts
+          tests/browser/run.sh browser-artifacts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-results
+          path: browser-artifacts
+          if-no-files-found: ignore
+
+  locked:
+    # Clean environment built only from the hash-locked file (QA-032).
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Fresh venv, locked install, lint, tests, study verification
+        run: tools/verify_clean_env.sh python
+
+  study-exact:
+    # The published study, bit for bit, in the environment that produced it.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install the study environment (hash-locked, NumPy 2.5.3, pandas 3.0.5)
+        run: |
+          python -m venv /tmp/study
+          /tmp/study/bin/pip install --require-hashes -r requirements/study-py313.txt
+          /tmp/study/bin/pip install --no-deps -e .
+      - name: Reproduce with zero difference
+        run: |
+          if [ ! -d experiments/data ]; then echo "private dataset absent: skipped"; exit 0; fi
+          /tmp/study/bin/python experiments/trend_vs_buyhold.py --verify | tee verify.log
+          grep -q "largest absolute difference 0$" verify.log
+
+  audit:
+    # Known vulnerabilities in every locked dependency (QA-041).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: pip-audit the lock files
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements/lock.txt --require-hashes --disable-pip
+          pip-audit -r requirements/study-py313.txt --require-hashes --disable-pip

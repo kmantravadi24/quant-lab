@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+.data_cache/
+.streamlit/secrets.toml
+
+# Market data downloaded for personal use must never be committed.
+# (In the private research repository the reference snapshot is already tracked,
+# so this rule does not affect it.)
+experiments/data/

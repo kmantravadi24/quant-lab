@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "quantlab-copilot": {
+      "command": "python",
+      "args": ["-m", "quantlab.copilot.server"],
+      "env": {
+        "PYTHONPATH": "src",
+        "QUANTLAB_COPILOT_LOG": ".data_cache/copilot"
+      }
+    }
+  }
+}

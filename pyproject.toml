@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantlab"
+version = "0.2.0"
+description = "Quant Lab — Systematic Research. Measurable Risk. Reproducible Results."
+readme = "README.md"
+license = "BUSL-1.1"
+license-files = ["LICENSE", "NOTICE.md"]
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26", "pandas>=2.2"]
+
+[project.optional-dependencies]
+data = ["yfinance>=0.2.40", "exchange_calendars>=4.5"]
+app = ["streamlit>=1.50", "plotly>=5.20"]
+agent = ["mcp>=2.3,<3"]  # Quant Research Copilot MCP server (quantlab.copilot.server)
+dev = ["pytest>=8", "ruff>=0.5", "scipy>=1.11", "hypothesis>=6.100"]  # scipy, hypothesis: test-only
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]  # long assertion lines are clearer than wrapped ones
+"app/*" = ["E501"]  # user-facing copy

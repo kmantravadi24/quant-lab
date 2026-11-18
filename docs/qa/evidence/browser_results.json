@@ -1,0 +1,116 @@
+[
+  {
+    "id": "L01",
+    "name": "home page lists all nine pages",
+    "pass": true,
+    "note": "9 links"
+  },
+  {
+    "id": "L02",
+    "name": "sidebar navigation renders every page without an error box",
+    "pass": true,
+    "note": ""
+  },
+  {
+    "id": "L03",
+    "name": "direct links work on a fresh session",
+    "pass": true,
+    "note": ""
+  },
+  {
+    "id": "L04",
+    "name": "synthetic data is labelled as synthetic",
+    "pass": true,
+    "note": "SYNTHETIC DEMO DATA"
+  },
+  {
+    "id": "L05",
+    "name": "browser refresh reproduces the same result",
+    "pass": true,
+    "note": "257,336 -> 257,336"
+  },
+  {
+    "id": "L06",
+    "name": "editing an allocation updates the result",
+    "pass": true,
+    "note": "257,336 -> 228,908"
+  },
+  {
+    "id": "L07",
+    "name": "over-allocation is refused, then recovers when corrected",
+    "pass": true,
+    "note": "refused true, recovered true"
+  },
+  {
+    "id": "L08",
+    "name": "rapid edits settle on the last input",
+    "pass": true,
+    "note": "223,990"
+  },
+  {
+    "id": "L09",
+    "name": "every Investment Lab tab renders",
+    "pass": true,
+    "note": "Growth / Compare / Drawdown & drift / Risk insights / Costs & timeline / Assumptions / Save & export"
+  },
+  {
+    "id": "L11",
+    "name": "exported final value equals the value on screen",
+    "pass": true,
+    "note": "5 downloads; file 223,990, screen 223,990"
+  },
+  {
+    "id": "L12",
+    "name": "HTML report is self-contained and carries the synthetic banner",
+    "pass": true,
+    "note": "48605 bytes"
+  },
+  {
+    "id": "L10",
+    "name": "saving and reloading a portfolio reproduces the result",
+    "pass": true,
+    "note": "saved 223,990, reloaded 223,990"
+  },
+  {
+    "id": "L13",
+    "name": "a corrupt portfolio file is refused with a message",
+    "pass": true,
+    "note": ""
+  },
+  {
+    "id": "L14",
+    "name": "laptop layout (1280x720)",
+    "pass": true,
+    "note": "horizontal overflow 0px, clipped labels 0"
+  },
+  {
+    "id": "L14",
+    "name": "phone layout (390x844)",
+    "pass": true,
+    "note": "horizontal overflow 0px, clipped labels 0"
+  },
+  {
+    "id": "L15",
+    "name": "controls are named, keyboard focus moves, one page heading",
+    "pass": true,
+    "note": "unnamed controls 0 , focus on A, h1 1, lang \"en\""
+  },
+  {
+    "id": "L16",
+    "name": "stress page shows scenario and per-holding results",
+    "pass": true,
+    "note": "3 tables"
+  },
+  {
+    "id": "L17",
+    "name": "Monte Carlo page labels itself as not a forecast",
+    "pass": true,
+    "note": ""
+  },
+  {
+    "id": "L18",
+    "name": "no uncaught browser errors during the run",
+    "pass": true,
+    "note": ""
+  }
+]
