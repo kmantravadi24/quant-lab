@@ -2,6 +2,8 @@
 
 **Systematic Research. Measurable Risk. Reproducible Results.**
 
+**Live demo:** [quantlab-kriti.streamlit.app](https://quantlab-kriti.streamlit.app/) (synthetic demo data only)
+
 A quantitative research platform in Python: a backtesting engine that cannot
 look ahead, performance and risk analytics, Monte Carlo simulation, statistical
 validation, and a dashboard on top. Built to answer one question properly
