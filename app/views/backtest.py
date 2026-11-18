@@ -16,7 +16,7 @@ from components.common import (
     show,
     stats_table,
 )
-from components.strategy import execution_controls, strategy_controls
+from components.strategy import execution_controls, strategy_controls, synthetic_trend_note
 
 from quantlab.analytics.metrics import drawdown_series
 from quantlab.backtesting import backtest_strategy
@@ -67,6 +67,7 @@ for col, (label, key, pct, tip) in zip(st.columns(5), cards, strict=True):
     col.metric(label, "n/a" if pd.isna(value) else (f"{value:.2%}" if pct else f"{value:.2f}"),
                None if pd.isna(delta) else (f"{delta:+.2%} vs benchmark" if pct else f"{delta:+.2f} vs benchmark"),
                delta_color="off", delta_arrow="off", help=tip)  # fmt: skip
+synthetic_trend_note(data, kind)
 
 t_perf, t_stats, t_trades, t_expo, t_assume, t_export = st.tabs(
     ["Performance", "Statistics", "Trades & costs", "Exposure", "Assumptions", "Export"]

@@ -1,7 +1,14 @@
 import streamlit as st
 from components import theme
 from components.common import downloads, figure, header, load_data, show
-from components.strategy import INFO, MOMENTUM, REVERSION, TREND, strategy_controls
+from components.strategy import (
+    INFO,
+    MOMENTUM,
+    REVERSION,
+    TREND,
+    strategy_controls,
+    synthetic_trend_note,
+)
 
 from quantlab.reporting import csv_bytes, json_bytes
 from quantlab.reporting.exports import describe_strategy
@@ -25,6 +32,7 @@ k[1].metric("Sessions with a position", f"{(out.signals.sum(axis=1) > 0).mean():
 first = out.weights.index[0].date() if len(out.weights) else "none"
 k[2].metric("First decision", str(first), help="Earlier sessions lack enough history for a signal.")
 k[3].metric("Assets ever held", f"{held.shape[1]} of {len(data.tickers)}")
+synthetic_trend_note(data, kind)
 if out.weights.empty:
     st.warning("**No signal was ever generated.** There is not enough history for these windows, "
                "or the entry condition never occurred. Shorten the windows or load more history.")  # fmt: skip

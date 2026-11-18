@@ -90,6 +90,14 @@ def strategy_controls(data: MarketData):
         st.stop()
 
 
+def synthetic_trend_note(data: MarketData, kind: str) -> None:
+    """On synthetic data only: say why a trend rule shows near-flat results there."""
+    if kind == TREND and data.metadata.synthetic:
+        st.caption("These simulated prices are a random walk (each day's move is independent of "
+                   "the last), so there is no trend for this rule to capture: flat results are "
+                   "the expected, correct outcome here.")  # fmt: skip
+
+
 def execution_controls(data: MarketData):
     """Sidebar execution assumptions. Returns (config, benchmark ticker, annual risk-free rate)."""
     with st.sidebar:
